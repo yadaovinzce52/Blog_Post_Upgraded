@@ -1,5 +1,6 @@
+import smtplib
 import requests
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
@@ -17,9 +18,30 @@ def go_about():
     return render_template('about.html')
 
 
-@app.route("/contact")
+@app.route("/contact", methods=["POST", "GET"])
 def go_contact():
-    return render_template('contact.html')
+    if request.method == "GET":
+        return render_template('contact.html', h1_message="Contact Me")
+    else:
+        name = request.form['name']
+        email = request.form['email']
+        phone = request.form['phone']
+        message = request.form['message']
+        my_email = "yadaovinzce@gmail.com"
+        my_password = "qzvl xykm rgni afqm"
+
+        with smtplib.SMTP('smtp.gmail.com') as connection:
+            connection.starttls()
+            connection.login(user=my_email, password=my_password)
+            connection.sendmail(
+                from_addr=email,
+                to_addrs=my_email,
+                msg=f"Subject:New Message\n\nName: {name}\nEmail: {email}\nPhone: {phone}\nMessage: {message}"
+            )
+
+        return render_template('contact.html', h1_message="Successfully sent your message")
+
+
 
 @app.route("/blog/<int:num>")
 def get_blog(num):
